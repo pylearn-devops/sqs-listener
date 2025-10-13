@@ -1,0 +1,53 @@
+[project]
+name = "sqs-fargate-listener"
+version = "0.1.0"
+description = "Lambda-like SQS listener decorator for ECS Fargate and Python apps"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "Akash", email = "your@email.com"}
+]
+keywords = ["aws", "sqs", "fargate", "lambda", "listener", "queue", "decorator"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: System :: Distributed Computing",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12"
+]
+
+dependencies = [
+  "boto3>=1.34.0,<2.0.0",
+  "colorlog>=6.8.0,<7.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/sqs-fargate-listener"
+Repository = "https://github.com/yourusername/sqs-fargate-listener"
+Issues = "https://github.com/yourusername/sqs-fargate-listener/issues"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+include-package-data = true
+package-dir = {"" = "src"}
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "mypy>=1.5.0",
+  "ruff>=0.1.0"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
