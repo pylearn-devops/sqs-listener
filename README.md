@@ -164,6 +164,8 @@ def send_notifications(msg): ...
 if __name__ == "__main__":
     run_listeners()
 ```
+
+> [!NOTE]
 > **Both queues are polled concurrently, each on its own threads.**
 
 ### 🛡️ Error handling & retries
@@ -232,7 +234,8 @@ Decorator Arguments
 | IDLE_SLEEP_MAX  | 2.0     | Max random sleep after empty poll  |
 
 
-> *Note:* Environment variables are overridden by decorator arguments. Precedence: Decorator > Env > Default
+> [!NOTE]
+> Environment variables are overridden by decorator arguments. Precedence: Decorator > Env > Default
 
 ---
 
@@ -265,7 +268,8 @@ LOG_LEVEL=DEBUG python app.py
 LOG_USE_COLOR=0 python app.py
 ```
 
-> *Note:* The logger automatically detects non-TTY environments and switches to plain text for clean CloudWatch logs.
+> [!NOTE]
+> The logger automatically detects non-TTY environments and switches to plain text for clean CloudWatch logs.
 
 ---
 
@@ -315,7 +319,9 @@ The task role (or instance role) needs these actions on your queue:
 |---------------------------------------------------|----------------------|
 | ApproximateNumberOfMessagesVisible / DesiredCount | 10 messages per task |
 
-> *Note:* Scale out when backlog > target, in when < target.
+
+> [!NOTE]
+> Scale out when backlog > target, in when < target.
 
 ---
 
