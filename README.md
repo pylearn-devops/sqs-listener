@@ -3,24 +3,22 @@
 > **A lightweight, Lambda-like SQS listener for Python running on ECS Fargate (or any container).**  
 > Handles long-polling, visibility heartbeats, partial batch failure, graceful shutdown, and beautiful colorized logs out of the box.
 
----
+
 
 ## 🚀 Why this exists
 
 When you attach an **SQS** queue to **AWS Lambda**, AWS automatically manages:
-- polling the queue,
-- invoking your handler,
-- deleting successful messages, and
-- redriving failures.
+  - polling the queue
+  - invoking your handler
+  - deleting successful messages
+  - redriving failures.
 
 On **ECS Fargate**, you don’t get this for free — you have to build a poller, manage visibility timeouts, handle retries, and scale your service yourself.
 
-This package brings the same convenience to containers.  
-Just decorate a function with `@sqs_listener(...)`, and the library does the rest.
+This package brings the same convenience to containers. Just decorate a function with `@sqs_listener(...)`, and the library does the rest.
 
----
 
-## 🧩 Install
+### 🧩 Install
 
 ```bash
 pip install sqs-fargate-listener
@@ -28,9 +26,9 @@ pip install sqs-fargate-listener
 
 ---
 
-# ✨ Quick Start
+## ✨ Quick Start
 
-## 💡 Processing Messages in `app.py`
+### 💡 Processing Messages in `app.py`
 
 When you decorate a function with `@sqs_listener(...)`, you’re telling the library:
 
@@ -43,9 +41,7 @@ The decorator automatically:
 - deletes successful messages,
 - and retries or sends failures to the DLQ.
 
-There are **two handler styles** you can use depending on your needs:
-
----
+**There are two handler styles you can use depending on your needs:**
 
 ### 🧩 1. Batch mode (recommended for throughput)
 
@@ -91,7 +87,7 @@ if __name__ == "__main__":
 
 ### 🪄 2. Per-message mode (simple boolean handler)
 
-- **Per-message mode gives you one SqsMessage at a time and expects a boolean return:**
+**Per-message mode gives you one SqsMessage at a time and expects a boolean return:**
   * True → delete the message
   * False or exception → leave in queue for retry
 
@@ -115,29 +111,31 @@ def handle_email(msg: SqsMessage) -> bool:
         print(f"Send failed: {e}")
         return False
 ```
+> [!NOTE]
 > **✅ Simpler to reason about. Best when each message is independent and quick to process.**
 
-### 📦 Working with message attributes
+## 📦 Working with message attributes
 
-- **You can access message attributes attached to the SQS message:**
+**You can access message attributes attached to the SQS message:**
 
-	```python
-	attrs = msg.message_attributes()
-	trace_id = attrs.get("trace_id")
-	print(f"Processing message trace_id={trace_id}")
-	```
-- **Make sure your queue’s producer sets attributes when sending messages:**
+```python
+attrs = msg.message_attributes()
+trace_id = attrs.get("trace_id")
+print(f"Processing message trace_id={trace_id}")
+```
 
-	```python
-	sqs.send_message(
-		QueueUrl=queue_url,
-		MessageBody=json.dumps({...}),
-		MessageAttributes={
-			"trace_id": {"DataType": "String", "StringValue": "abc-123"}
-		}
-	)
-	```
- 
+**Make sure your queue’s producer sets attributes when sending messages:**
+
+```python
+sqs.send_message(
+	QueueUrl=queue_url,
+	MessageBody=json.dumps({...}),
+	MessageAttributes={
+		"trace_id": {"DataType": "String", "StringValue": "abc-123"}
+	}
+)
+```
+
 
 ### 🧩 SqsMessage helpers
 
@@ -186,6 +184,7 @@ For longer jobs, visibility is automatically extended while your handler runs.
 	6.	Keeps failed ones for retry / DLQ.
 	7.	Gracefully drains on SIGTERM (during ECS scale-in or container stop).
 
+> [!NOTE]
 > **Everything runs in-process with no need for AWS Lambda or additional services.**
 
 ### 🪶 Features at a glance
@@ -205,7 +204,7 @@ For longer jobs, visibility is automatically extended while your handler runs.
 
 ---
 
-# 🧠 Configuration
+## 🧠 Configuration
 
 Decorator Arguments
 
@@ -237,7 +236,7 @@ Decorator Arguments
 
 ---
 
-# 🪵 Logging
+## 🪵 Logging
 
 The package uses colorlog for vivid, structured output that’s CloudWatch-safe.
 
@@ -270,7 +269,7 @@ LOG_USE_COLOR=0 python app.py
 
 ---
 
-# 🧰 IAM Permissions
+## 🧰 IAM Permissions
 
 The task role (or instance role) needs these actions on your queue:
 
@@ -320,7 +319,7 @@ The task role (or instance role) needs these actions on your queue:
 
 ---
 
-# 🧱 How it differs from AWS Lambda + SQS
+## 🧱 How it differs from AWS Lambda + SQS
 
 
 | Capability            | AWS Lambda              | sqs-fargate-listener    |
@@ -336,37 +335,22 @@ The task role (or instance role) needs these actions on your queue:
 
 ---
 
-# 🔒 Graceful shutdown behavior
+## 🔒 Graceful shutdown behavior
 
 **When Fargate stops a task, it sends SIGTERM.**
 
-**The listener:**
-* Stops fetching new messages.
-* Waits for active handlers to finish.
-* Extends visibility if needed.
-* Exits cleanly.
+- **The listener:**
+  * Stops fetching new messages.
+  * Waits for active handlers to finish.
+  * Extends visibility if needed.
+  * Exits cleanly.
 
 Set ECS container stopTimeout ≥ your typical processing time.
 
 ---
 
-# 🧩 Advanced patterns
 
-**Multiple queues in one app**
-
-- Decorate multiple functions — all run concurrently:
-
-	```python
-	@sqs_listener(queue_url="https://…/queueA")
-	def handle_a(msg): ...
-	
-	@sqs_listener(queue_url="https://…/queueB")
-	def handle_b(msg): ...
-	```
-
----
-
-# 🧪 Testing locally
+## 🧪 Testing locally
 
 ```bash
 export AWS_ACCESS_KEY_ID=foo
@@ -382,5 +366,4 @@ You can use [LocalStack](https://localstack.cloud) or AWS’s [SQS mock](https:/
 
 ## 🧾 License
 
-**MIT © 2025 AB
-Contributions welcome! PRs for async/aiobotocore support, metrics, and batching improvements are encouraged.**
+**MIT © 2025 AB**
