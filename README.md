@@ -337,7 +337,6 @@ The task role (or instance role) needs these actions on your queue:
 | Visibility heartbeat  | ✅                       | ✅                       |
 | Code model            | def handler(event, ctx) | @sqs_listener decorator |
 | Local debugging       | Limited                 | ✅                       |
-| Works outside AWS     | ❌                       | ✅                       |
 
 ---
 
@@ -358,15 +357,38 @@ Set ECS container stopTimeout ≥ your typical processing time.
 
 ## 🧪 Testing locally
 
-```bash
-export AWS_ACCESS_KEY_ID=foo
-export AWS_SECRET_ACCESS_KEY=bar
-export AWS_DEFAULT_REGION=us-east-1
-export LOG_LEVEL=DEBUG
-python app.py
-```
+- **Quick Test Setup:**
+
+  * Start LocalStack and create queue: `make localstack queue`
+  * Full e2e flow: `make test` (starts LocalStack, creates queue, runs worker, sends message)
+
+- **Individual Testing Steps:**
+
+  * Launch infrastructure: `make up` (starts LocalStack + worker)
+  * Send test message: `make send`
+  * Monitor processing: `make logs`
+  * Cleanup: `make down`
+
+- **Configuration:**
+
+  * Default queue: test-queue in us-east-1
+  * LocalStack endpoint: http://localhost:4566
+  * Customize with env vars: REGION, ENDPOINT, QUEUE_NAME
+
+> [!NOTE]
+> Make sure `docker` and `aws` CLI are installed and configured in your local.
 
 You can use [LocalStack](https://localstack.cloud) or AWS’s [SQS mock](https://docs.aws.amazon.com/cli/latest/reference/sqs/) for local queues.
+
+### End-to-end test example
+
+```bash
+#!/bin/zsh
+ docker compose up -d localstack
+ aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name test-queue --region us-east-1
+export QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/test-queue"
+docker compose up --build
+```
 
 ---
 

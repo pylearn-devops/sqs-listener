@@ -4,7 +4,7 @@ import time
 import random
 import threading
 import signal
-from typing import Callable, Iterable, List, Optional, Dict, Any
+from typing import Callable, Iterable, List, Optional, Dict, Any, Tuple
 
 import boto3
 from botocore.config import Config
@@ -15,7 +15,7 @@ from .logging_setup import get_logger
 logger = get_logger("sqs_fargate_listener.engine")
 
 
-def _env_int(name, default): 
+def _env_int(name, default):
     return int(os.environ.get(name, str(default)))
 
 
@@ -24,7 +24,22 @@ def _env_float(name, default):
 
 
 class VisibilityExtender(threading.Thread):
-    def __init__(self, sqs, queue_url, receipt_handle, vis_secs, max_extend, stop_event: threading.Event):
+    """
+    Heartbeats a message's visibility while it's actively being processed.
+    Stops immediately when either:
+      - the global stop_event (SIGTERM drain) is set, or
+      - the per-message msg_stop_event is set (handler finished).
+    """
+    def __init__(
+        self,
+        sqs,
+        queue_url: str,
+        receipt_handle: str,
+        vis_secs: int,
+        max_extend: int,
+        stop_event: threading.Event,       # global stop (SIGTERM)
+        msg_stop_event: threading.Event,   # per-message stop (handler finished)
+    ):
         super().__init__(daemon=True)
         self.sqs = sqs
         self.queue_url = queue_url
@@ -32,13 +47,16 @@ class VisibilityExtender(threading.Thread):
         self.vis_secs = vis_secs
         self.max_extend = max_extend
         self.stop_event = stop_event
+        self.msg_stop_event = msg_stop_event
         self.elapsed = 0
 
     def run(self):
         interval = max(1, self.vis_secs // 2)
-        while not self.stop_event.is_set() and self.elapsed < self.max_extend:
-            time.sleep(interval)
-            if self.stop_event.is_set():
+        # Sleep-before-extend pattern; exits quickly if msg_stop_event gets set
+        while not self.stop_event.is_set() and not self.msg_stop_event.is_set() and self.elapsed < self.max_extend:
+            # wait returns early if msg_stop_event is set
+            self.msg_stop_event.wait(timeout=interval)
+            if self.stop_event.is_set() or self.msg_stop_event.is_set():
                 break
             try:
                 self.sqs.change_message_visibility(
@@ -48,7 +66,9 @@ class VisibilityExtender(threading.Thread):
                 )
                 logger.debug("Extended visibility for RH=%s by %ds", self.rh[:12], self.vis_secs)
             except Exception as e:
+                # If the message was already deleted or became visible again, just stop.
                 logger.warning("[visibility] extend failed for RH=%s: %s", self.rh[:12], e)
+                break
             self.elapsed += interval
 
 
@@ -174,15 +194,17 @@ class SqsListenerEngine:
                     time.sleep(random.random() * self.idle_sleep_max)
                     continue
 
-                # Start visibility extenders for each message
-                extenders = {}
+                # Start a visibility extender per message with its own stop event
+                extenders: Dict[str, Tuple[threading.Event, VisibilityExtender]] = {}
                 for m in batch:
+                    msg_stop = threading.Event()
                     ext = VisibilityExtender(
                         self.sqs, self.queue_url, m.receipt_handle,
-                        self.visibility_secs, self.max_extend, self.stop_event
+                        self.visibility_secs, self.max_extend,
+                        self.stop_event, msg_stop
                     )
                     ext.start()
-                    extenders[m.receipt_handle] = ext
+                    extenders[m.receipt_handle] = (msg_stop, ext)
 
                 try:
                     if self.mode == "batch":
@@ -191,33 +213,56 @@ class SqsListenerEngine:
                             if not isinstance(result, BatchResult):
                                 raise TypeError("Batch handler must return BatchResult")
                         except Exception as e:
-                            # Whole-batch failure → nothing deleted
+                            # Whole-batch failure → nothing deleted; stop extenders
                             logger.error("[handler] batch error: %s", e, exc_info=True)
+                            for msg_stop, _ in extenders.values():
+                                msg_stop.set()
+                            # Give them a tick to exit
+                            for _, t in extenders.values():
+                                t.join(timeout=0.2)
                             continue
+
                         failed = set(result.failed_receipt_handles)
                         ok = [m.receipt_handle for m in batch if m.receipt_handle not in failed]
+
+                        # Handler done → stop all extenders before deletes
+                        for msg_stop, _ in extenders.values():
+                            msg_stop.set()
+                        for _, t in extenders.values():
+                            t.join(timeout=0.2)
+
                         if failed:
                             logger.warning("Batch processed with failures: ok=%d failed=%d", len(ok), len(failed))
                         else:
                             logger.info("Batch processed successfully: ok=%d", len(ok))
                         self._delete_batch(ok)
+
                     else:
-                        ok = []
-                        failed = 0
+                        ok: list[str] = []
+                        failed_count = 0
                         for m in batch:
                             try:
                                 if bool(self.handler(m)):
                                     ok.append(m.receipt_handle)
                                 else:
-                                    failed += 1
+                                    failed_count += 1
                             except Exception as e:
-                                failed += 1
+                                failed_count += 1
                                 logger.error("[handler] error for %s: %s", m.message_id, e, exc_info=True)
-                        logger.info("Per-message processed: ok=%d failed=%d", len(ok), failed)
+
+                        # Stop all extenders before deletes
+                        for msg_stop, _ in extenders.values():
+                            msg_stop.set()
+                        for _, t in extenders.values():
+                            t.join(timeout=0.2)
+
+                        logger.info("Per-message processed: ok=%d failed=%d", len(ok), failed_count)
                         self._delete_batch(ok)
+
                 finally:
-                    # extenders exit on their next sleep tick when stop_event is set; best-effort
+                    # Extenders already signaled and joined
                     pass
+
             except Exception as e:
                 logger.error("[loop] error: %s", e, exc_info=True)
                 time.sleep(1)
