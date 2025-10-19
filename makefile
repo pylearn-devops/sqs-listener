@@ -19,7 +19,14 @@ QUEUE_URL_IN_CONTAINER := http://$(QUEUE_HOST):$(QUEUE_PORT)/$(ACCOUNT)/$(QUEUE_
 # URL used by your host for CLI (path-style)
 QUEUE_URL_ON_HOST := $(ENDPOINT)/$(ACCOUNT)/$(QUEUE_NAME)
 
-run-unit-tests:
+setup-env:
+	@echo "🧪 Setting up env..."
+	python -m pip install --upgrade pip
+	pip install pipenv
+	pipenv install --dev
+	@echo "✅ Setup completed."
+
+run-pytest:
 	@echo "🧪 Running unit tests..."
 	pipenv run pytest --cov-report xml:coverage.xml --cov=. --cov-report=term-missing tests
 	@echo "✅ Unit tests completed."

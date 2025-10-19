@@ -1,0 +1,39 @@
+on:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+      - develop
+      - 'feature/**'
+      - 'releases/**'
+  pull_request:
+      types: [opened, synchronize, reopened]
+  workflow_dispatch: # Allow manual triggers
+
+
+name: SonarQube Tests
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Setup Env and Run tests
+      run: |
+        make setup-env
+        make run-pytest
+
+    - uses: SonarSource/sonarqube-scan-action@v5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_QUBE_CLOUD }}
+      with:
+        args: >
+          -Dsonar.organization=pylearn-devops
+          -Dsonar.projectKey=pylearn-devops_ab-slack-events-api
+          -Dsonar.python.coverage.reportPaths=coverage.xml
+          -Dsonar.tests=tests/
+          -Dsonar.test.exclusions=tests/**
+          -Dsonar.sources=.
