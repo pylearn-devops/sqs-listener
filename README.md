@@ -384,8 +384,8 @@ You can use [LocalStack](https://localstack.cloud) or AWS’s [SQS mock](https:/
 
 ```bash
 #!/bin/zsh
- docker compose up -d localstack
- aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name test-queue --region us-east-1
+docker compose up -d localstack
+aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name test-queue --region us-east-1
 export QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/test-queue"
 docker compose up --build
 ```
