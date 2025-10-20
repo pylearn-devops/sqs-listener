@@ -1,0 +1,37 @@
+name: "🚀 Feature Request"
+description: Suggest a new idea or enhancement
+labels: [enhancement]
+title: "[Feature] <short summary>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to improve **sqs-fargate-listener**?  
+        Tell us what you'd love to see!
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One-line summary of your feature idea
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem are you trying to solve?
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like to see it implemented?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any other approaches you thought about?
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Logs, links, related issues, or diagrams.
