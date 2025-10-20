@@ -32,7 +32,7 @@ jobs:
       with:
         args: >
           -Dsonar.organization=pylearn-devops
-          -Dsonar.projectKey=sqs-fargate-listener
+          -Dsonar.projectKey=sqs-listener
           -Dsonar.python.coverage.reportPaths=coverage.xml
           -Dsonar.tests=tests/
           -Dsonar.test.exclusions=tests/**
