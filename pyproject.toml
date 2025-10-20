@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-  {name = "Akash", email = "your@email.com"}
+  {name = "Akash", email = "akashbasa8@email.com"}
 ]
 keywords = ["aws", "sqs", "fargate", "lambda", "listener", "queue", "decorator"]
 classifiers = [
@@ -26,9 +26,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/sqs-fargate-listener"
-Repository = "https://github.com/yourusername/sqs-fargate-listener"
-Issues = "https://github.com/yourusername/sqs-fargate-listener/issues"
+Homepage = "https://github.com/pylearn-devops/sqs-fargate-listener"
+Repository = "https://github.com/pylearn-devops/sqs-fargate-listener"
+Issues = "https://github.com/pylearn-devops/sqs-fargate-listener/issues"
 
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]

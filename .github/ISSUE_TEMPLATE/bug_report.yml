@@ -1,0 +1,59 @@
+name: "🐞 Bug Report"
+description: Report something that isn't working as expected
+labels: [bug]
+title: "[Bug] <short summary>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+        Please include as much detail as possible.
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: |
+        Example:
+        - Python 3.11
+        - boto3 1.34.x
+        - LocalStack v3.2.0
+        - OS: macOS 14 / Ubuntu 22.04
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened?
+      placeholder: Describe the bug clearly.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce it?
+      placeholder: |
+        1. Set up ...
+        2. Run `make test`
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead?
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Traceback
+      description: Paste any error or relevant output.
+      render: shell
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical

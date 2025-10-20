@@ -1,0 +1,25 @@
+name: "💬 Question / Help"
+description: Ask a question about usage, testing, or development
+labels: [question]
+title: "[Question] <your question here>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about **sqs-fargate-listener**? Ask away!
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like help with?
+      placeholder: |
+        Example:
+        - How do I test the listener without deploying to Fargate?
+        - How can I extend visibility timeout dynamically?
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment (optional)
+      description: e.g., LocalStack version, Python version, Docker version

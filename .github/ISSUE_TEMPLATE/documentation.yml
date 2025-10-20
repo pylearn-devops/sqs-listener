@@ -1,0 +1,30 @@
+name: "📝 Documentation Request"
+description: Report missing, outdated, or unclear documentation
+labels: [documentation]
+title: "[Docs] <short summary>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve the documentation for **sqs-fargate-listener**!
+  - type: dropdown
+    id: doc_area
+    attributes:
+      label: Which area needs improvement?
+      options:
+        - README.md
+        - Makefile usage
+        - LocalStack setup
+        - Unit tests
+        - API (decorator / engine)
+        - Other
+  - type: textarea
+    id: details
+    attributes:
+      label: Describe the issue
+      description: What's missing or confusing?
+      placeholder: |
+        Example:
+        - The README should explain how to configure `QUEUE_URL` in Fargate.
+    validations:
+      required: true
