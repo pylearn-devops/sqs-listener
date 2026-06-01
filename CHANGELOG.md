@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## [v0.1.1] - 2026-04-21
+
+### 📌 Other Changes
+
+- Update license year and badge links in README (#6) ([49bf1b2](https://github.com/Dev-kitx/sqs-fargate-listener/commit/49bf1b2297a07d32ca16d1d6aac5c8d23e970c9b)) by @aakashbasa
+- Add CodeQL analysis workflow configuration (#8) ([5877da3](https://github.com/Dev-kitx/sqs-fargate-listener/commit/5877da33bc96a36f867173880c5941a715ef471c)) by @aakashbasa
+
 ## [v0.1.0] - 2026-04-21
 
 ### ✨ Features
